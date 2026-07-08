@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opencap-to-nwb"
+version = "0.1.0"
+description = "Convert OpenCap/OpenSim-style outputs to NWB."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Philip Adenekan" }
+]
+dependencies = [
+  "numpy>=1.23",
+  "PyYAML>=6.0",
+  "pynwb>=2.6"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0"
+]
+
+[project.scripts]
+opencap-to-nwb = "opencap_to_nwb.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

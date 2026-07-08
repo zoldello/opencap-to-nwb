@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Tests / caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Environments
+.venv/
+venv/
+env/
+.env
+.conda/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated NWB files
+*.nwb
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Large local data
+real_tests/
+real_data/
+FieldStudy/
+subject0/
+subject0_staged_for_v1/
+
