@@ -80,9 +80,7 @@ def write_nwb(session: OpenCapSession, output_path: str | Path) -> Path:
     pose = session.pose
     pose_flat = pose.positions.reshape((pose.positions.shape[0], -1))
     pose_columns = [
-        f"{marker}_{axis}"
-        for marker in pose.marker_names
-        for axis in ("x", "y", "z")
+        f"{marker}_{axis}" for marker in pose.marker_names for axis in ("x", "y", "z")
     ]
     pose_description = (
         "3D marker/body-point positions parsed from an OpenCap/OpenSim-style TRC file. "

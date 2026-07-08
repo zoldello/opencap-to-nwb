@@ -50,7 +50,9 @@ def _read_lines(path: Path, file_label: str) -> list[str]:
     return lines
 
 
-def _ensure_unique_nonempty_names(names: list[str], file_label: str, path: Path) -> None:
+def _ensure_unique_nonempty_names(
+    names: list[str], file_label: str, path: Path
+) -> None:
     """Validate that parsed column/marker names are non-empty and unique."""
     if not names:
         raise ParseError(f"{file_label} has no data names in {path}")
@@ -61,7 +63,9 @@ def _ensure_unique_nonempty_names(names: list[str], file_label: str, path: Path)
 
     duplicates = sorted({name for name in names if names.count(name) > 1})
     if duplicates:
-        raise ParseError(f"{file_label} contains duplicate names in {path}: {duplicates}")
+        raise ParseError(
+            f"{file_label} contains duplicate names in {path}: {duplicates}"
+        )
 
 
 def _ensure_finite_array(values: np.ndarray, file_label: str, path: Path) -> None:
@@ -74,7 +78,9 @@ def _ensure_finite_array(values: np.ndarray, file_label: str, path: Path) -> Non
         )
 
 
-def _ensure_strictly_increasing(values: np.ndarray, field_name: str, file_label: str, path: Path) -> None:
+def _ensure_strictly_increasing(
+    values: np.ndarray, field_name: str, file_label: str, path: Path
+) -> None:
     """Validate that a numeric vector is strictly increasing."""
     if values.size < 2:
         return
@@ -89,7 +95,9 @@ def _ensure_strictly_increasing(values: np.ndarray, field_name: str, file_label:
         )
 
 
-def _parse_positive_float_or_none(value: Any, field_name: str, path: Path) -> float | None:
+def _parse_positive_float_or_none(
+    value: Any, field_name: str, path: Path
+) -> float | None:
     """Parse optional positive numeric metadata fields."""
     if value is None:
         return None
@@ -97,7 +105,9 @@ def _parse_positive_float_or_none(value: Any, field_name: str, path: Path) -> fl
     try:
         parsed = float(value)
     except (TypeError, ValueError) as exc:
-        raise ParseError(f"Metadata field {field_name!r} must be numeric in {path}") from exc
+        raise ParseError(
+            f"Metadata field {field_name!r} must be numeric in {path}"
+        ) from exc
 
     if parsed <= 0:
         raise ParseError(f"Metadata field {field_name!r} must be positive in {path}")
@@ -105,7 +115,9 @@ def _parse_positive_float_or_none(value: Any, field_name: str, path: Path) -> fl
     return parsed
 
 
-def _parse_optional_positive_int(value: str | None, field_name: str, file_label: str, path: Path) -> int | None:
+def _parse_optional_positive_int(
+    value: str | None, field_name: str, file_label: str, path: Path
+) -> int | None:
     """Parse optional positive integer header fields.
 
     Some OpenSim-style headers store integer counts as values like "5" or "5.0",
@@ -117,11 +129,15 @@ def _parse_optional_positive_int(value: str | None, field_name: str, file_label:
     try:
         parsed_float = float(value)
     except ValueError as exc:
-        raise ParseError(f"{file_label} header field {field_name!r} must be numeric in {path}") from exc
+        raise ParseError(
+            f"{file_label} header field {field_name!r} must be numeric in {path}"
+        ) from exc
 
     parsed_int = int(parsed_float)
     if parsed_int <= 0 or parsed_int != parsed_float:
-        raise ParseError(f"{file_label} header field {field_name!r} must be a positive integer in {path}")
+        raise ParseError(
+            f"{file_label} header field {field_name!r} must be a positive integer in {path}"
+        )
 
     return parsed_int
 
@@ -204,7 +220,9 @@ def _parse_trc_header(lines: list[str], path: Path) -> _TrcHeader:
     if header_idx is None:
         raise ParseError(f"Could not find TRC Frame#/Time header in {path}")
 
-    header_tokens = [token.strip() for token in lines[header_idx].split("\t") if token.strip()]
+    header_tokens = [
+        token.strip() for token in lines[header_idx].split("\t") if token.strip()
+    ]
     if len(header_tokens) < 3:
         raise ParseError(f"TRC header has no marker names in {path}")
 
@@ -244,7 +262,9 @@ def _parse_trc_header(lines: list[str], path: Path) -> _TrcHeader:
     if header_idx + 1 >= len(lines):
         raise ParseError(f"TRC coordinate-label row is missing in {path}")
 
-    coordinate_labels = [token.strip() for token in lines[header_idx + 1].split("\t") if token.strip()]
+    coordinate_labels = [
+        token.strip() for token in lines[header_idx + 1].split("\t") if token.strip()
+    ]
     expected_coordinate_labels = len(marker_names) * 3
 
     if len(coordinate_labels) != expected_coordinate_labels:
@@ -301,17 +321,25 @@ def _parse_numeric_rows(
     return arr
 
 
-def _validate_trc_counts(header: _TrcHeader, actual_num_frames: int, path: Path) -> None:
+def _validate_trc_counts(
+    header: _TrcHeader, actual_num_frames: int, path: Path
+) -> None:
     """Validate parsed TRC row/marker counts against declared header values."""
     actual_num_markers = len(header.marker_names)
 
-    if header.declared_num_frames is not None and header.declared_num_frames != actual_num_frames:
+    if (
+        header.declared_num_frames is not None
+        and header.declared_num_frames != actual_num_frames
+    ):
         raise ParseError(
             f"TRC NumFrames mismatch in {path}: "
             f"header says {header.declared_num_frames}, parsed {actual_num_frames}"
         )
 
-    if header.declared_num_markers is not None and header.declared_num_markers != actual_num_markers:
+    if (
+        header.declared_num_markers is not None
+        and header.declared_num_markers != actual_num_markers
+    ):
         raise ParseError(
             f"TRC NumMarkers mismatch in {path}: "
             f"header says {header.declared_num_markers}, parsed {actual_num_markers}"
@@ -350,7 +378,9 @@ def parse_trc(path: str | Path) -> PoseData:
     _ensure_strictly_increasing(frames, "frame column", "TRC", path)
     _ensure_strictly_increasing(time, "time column", "TRC", path)
 
-    positions = coord_values.reshape((coord_values.shape[0], len(header.marker_names), 3))
+    positions = coord_values.reshape(
+        (coord_values.shape[0], len(header.marker_names), 3)
+    )
     _validate_trc_counts(header, actual_num_frames=positions.shape[0], path=path)
 
     return PoseData(
@@ -396,9 +426,13 @@ def _parse_mot_declared_counts(lines: list[str]) -> tuple[int | None, int | None
         normalized_key = key.lower()
 
         if normalized_key in {"datarows", "nrows"}:
-            declared_num_rows = _parse_optional_positive_int(value, key, "MOT", Path("<header>"))
+            declared_num_rows = _parse_optional_positive_int(
+                value, key, "MOT", Path("<header>")
+            )
         elif normalized_key in {"datacolumns", "ncolumns"}:
-            declared_num_columns = _parse_optional_positive_int(value, key, "MOT", Path("<header>"))
+            declared_num_columns = _parse_optional_positive_int(
+                value, key, "MOT", Path("<header>")
+            )
 
     return declared_num_rows, declared_num_columns
 
@@ -427,7 +461,9 @@ def _parse_mot_header(lines: list[str], path: Path) -> _MotHeader:
         raise ParseError(f"MOT first data column must be time in {path}")
 
     if len(columns) < 2:
-        raise ParseError(f"MOT file must contain at least one data column after time in {path}")
+        raise ParseError(
+            f"MOT file must contain at least one data column after time in {path}"
+        )
 
     _ensure_unique_nonempty_names(columns, "MOT column header", path)
 
@@ -447,7 +483,10 @@ def _parse_mot_header(lines: list[str], path: Path) -> _MotHeader:
 
 def _validate_mot_counts(header: _MotHeader, actual_num_rows: int, path: Path) -> None:
     """Validate parsed MOT row count against declared header value."""
-    if header.declared_num_rows is not None and header.declared_num_rows != actual_num_rows:
+    if (
+        header.declared_num_rows is not None
+        and header.declared_num_rows != actual_num_rows
+    ):
         raise ParseError(
             f"MOT datarows mismatch in {path}: "
             f"header says {header.declared_num_rows}, parsed {actual_num_rows}"

@@ -93,9 +93,7 @@ def _validate_with_pynwb_cli(path: Path) -> tuple[str, ...]:
     )
 
     output = "\n".join(
-        part.strip()
-        for part in (completed.stdout, completed.stderr)
-        if part.strip()
+        part.strip() for part in (completed.stdout, completed.stderr) if part.strip()
     )
 
     if completed.returncode == 0:

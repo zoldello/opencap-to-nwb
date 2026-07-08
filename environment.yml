@@ -1,6 +1,8 @@
 name: opencap-to-nwb
+
 channels:
   - conda-forge
+
 dependencies:
   - python=3.11
   - numpy>=1.23
@@ -8,6 +10,9 @@ dependencies:
   - pynwb>=2.6
   - h5py
   - pytest>=7.0
+  - black>=24.0
+  - jupyterlab
+  - matplotlib
   - pip
   - pip:
       - -e .

@@ -1,0 +1,12 @@
+# Synthetic OpenCap-style metadata for parser/scaffold testing.
+# Keep OpenCap-required-style fields intact.
+height_m: 1.76
+mass_kg: 72.5
+sex: "male"
+
+# Extra fields used by opencap-to-nwb.
+subject_id: "sub-001"
+session_id: "ses-001"
+trial_id: "walk-001"
+activity: "walking"
+source_video: "walk_001.mov"

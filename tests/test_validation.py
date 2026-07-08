@@ -55,7 +55,9 @@ def test_parse_trc_rejects_non_increasing_frame_column(tmp_path):
         )
     )
 
-    with pytest.raises(ParseError, match="TRC frame column must be strictly increasing"):
+    with pytest.raises(
+        ParseError, match="TRC frame column must be strictly increasing"
+    ):
         parse_trc(path)
 
 
@@ -302,4 +304,3 @@ def test_parse_mot_rejects_datacolumns_mismatch(tmp_path):
 
     with pytest.raises(ParseError, match="MOT datacolumns mismatch"):
         parse_mot(path)
-    
