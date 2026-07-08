@@ -1,4 +1,4 @@
-# Opencap to NWB Converter
+# OpenCap to NWB Converter
 
 ## Purpose
 
@@ -10,50 +10,50 @@ This is useful for researchers working with multimodal human-movement data, incl
 
 The goal is to make OpenCap movement data more useful for neuroscience, neuromuscular research, neurorehabilitation, motor-control, and brain-computer interface workflows. NWB has a rich and growing ecosystem of tools, and this project makes it more convenient for scientists and engineers to use OpenCap data within that ecosystem.
 
-
 ## Status
 
-**This is still a prototype, not yet ready for prime-time use. Use only for evaluation for now**
+This project is currently a prototype. It is intended for evaluation and development use, not production scientific use.
 
-This was made for Opencap. An extension for opencap monocular will be made prior to release for prime-time use.
+The current version targets regular OpenCap/OpenSim-style output files. OpenCap Monocular support is planned, but has not yet been validated against real OpenCap Monocular output.
 
+## Current Scope
 
+* OpenCap/OpenSim-style `.trc` files for 3D marker/body-point positions
+* OpenCap/OpenSim-style `.mot` files for joint-angle / coordinate time series
+* YAML session metadata
+* Real OpenCap-style folder layouts using `MarkerData/` and `OpenSimData/IK/`
+* NWB writing with:
 
+  * subject/session metadata
+  * pose time series
+  * joint-angle time series
+  * source-file references
+* Parser, integration, validation, and CLI tests
 
-## Current scope
+## Future Features
 
-- OpenCap/OpenSim-style `.trc` files for 3D marker/body-point positions
-- OpenCap/OpenSim-style `.mot` files for joint-angle / coordinate time series
-- YAML metadata
-- NWB writing with:
-  - subject/session metadata
-  - pose time series
-  - joint-angle time series
-  - source-file references in descriptions/comments
-- parser, integration, and CLI tests
+The list is sorted roughly by priority. Bold items are expected before a stronger public release.
 
-## Future features 
+* **EMG support**
+* **OpenCap Monocular support**
+* **Validation against real OpenCap Monocular output**
+* Optional EMG synchronization metadata
+* DANDI-oriented packaging or upload helpers
+* `ndx-pose` support for richer pose representation
+* Support for additional multimodal signals where appropriate, such as EEG, ECoG, LFP, spikes, or behavioral events
 
-The list is sorted by priority. Bold items are must-have features needed for a final release
+## Why Regular OpenCap First?
 
-- **EMG**
-- **Opencap Monocular support**
-- DANDI upload
-- automatic synchronization
-- `ndx-pose`
-- full OpenCap Monocular validation
-- EEG/ECoG/LFP/spikes
+This version targets generic OpenCap/OpenSim-style `.trc` and `.mot` files.
 
+OpenCap Monocular also outputs `.trc`, `.mot`, `mono.json`, and `*_scaled.osim`, but this project has not yet been validated against real OpenCap Monocular output data.
 
-## Why regular OpenCap first?
+Regular OpenCap/OpenSim-style files are a practical first target because they provide a real movement-data workflow for testing the parser, validation logic, NWB writing, and command-line interface before expanding the scope.
 
-The version targets generic OpenCap/OpenSim-style `.trc` and `.mot` files.
-OpenCap Monocular also outputs `.trc`, `.mot`, `mono.json`, and `*_scaled.osim`,
-but this scaffold has not yet been validated against real Monocular output data.
+## Install Locally with Conda
 
-## Install locally with Conda
+Recommended:
 
-### Recommended:
 ```bash
 conda env create -f environment.yml
 conda activate opencap-to-nwb
@@ -66,7 +66,7 @@ pip:
   - -e .
 ```
 
-So changes you make to files under `src/opencap_to_nwb/` are picked up without reinstalling.
+So changes made under `src/opencap_to_nwb/` are picked up without reinstalling.
 
 If you later change `environment.yml`, update the environment with:
 
@@ -75,39 +75,57 @@ conda env update -f environment.yml --prune
 conda activate opencap-to-nwb
 ```
 
-### Alternative using `mamba`:
+Alternative using `mamba`:
 
 ```bash
 mamba env create -f environment.yml
 conda activate opencap-to-nwb
 ```
 
-## Run tests
+## Run Tests
 
 ```bash
 pytest
 ```
 
-## Run the converter
+## Run the Converter
+
+Convert a simple staged folder:
 
 ```bash
 opencap-to-nwb \
-  --input example_data/session_001 \
+  --input test_dat/session_001 \
   --output session_001.nwb
 ```
 
-Or with explicit files:
+List available trials in a real OpenCap-style subject folder:
+
+```bash
+opencap-to-nwb list-trials \
+  --input path/to/subject0
+```
+
+Convert a specific trial from a real OpenCap-style subject folder:
 
 ```bash
 opencap-to-nwb \
-  --input example_data/session_001 \
-  --metadata example_data/session_001/metadata.yaml \
-  --trc example_data/session_001/trial_001.trc \
-  --mot example_data/session_001/trial_001.mot \
+  --input path/to/subject0 \
+  --trial Squats_0 \
+  --output subject0_squats.nwb
+```
+
+Or convert using explicit files:
+
+```bash
+opencap-to-nwb \
+  --input test_dat/session_001 \
+  --metadata test_dat/session_001/metadata.yaml \
+  --trc test_dat/session_001/trial_001.trc \
+  --mot test_dat/session_001/trial_001.mot \
   --output session_001.nwb
 ```
 
-## Example metadata
+## Example Metadata
 
 ```yaml
 height_m: 1.76
@@ -121,13 +139,86 @@ activity: "walking"
 source_video: "walk_001.mov"
 ```
 
-## Planned next steps
+## Planned Next Steps
 
-Recommended roadmap:
+1. Test against additional real regular OpenCap output.
+2. Improve metadata extraction from real OpenCap folders.
+3. Add raw EMG storage as optional V2 input.
+4. Add optional EMG sync offset metadata.
+5. Test against real OpenCap Monocular output.
+6. Add DANDI-oriented packaging or upload helpers.
+7. Consider `ndx-pose` once the basic mapping is stable.
 
-1. Test against real regular OpenCap sample output.
-2. Add raw EMG storage as optional V2 input.
-3. Add optional EMG sync offset metadata.
-4. Test against real OpenCap Monocular output.
-5. Add DANDI/NWB validation helpers.
-6. Consider `ndx-pose` once the basic mapping is stable.
+
+## Example Workflow
+
+A typical local workflow is:
+
+```bash
+conda activate opencap-to-nwb
+pytest
+opencap-to-nwb list-trials --input test_data/subject0
+opencap-to-nwb \
+  --input test_data/subject0 \
+  --trial Squats_0 \
+  --output test_output/subject0_squats.nwb
+jupyter lab notebooks/002-subject0.ipynb
+```
+
+This checks that the package tests pass, lists the available trials in a real OpenCap-style folder, converts one trial to NWB, and opens the inspection notebook.
+
+## Inspecting NWB Output
+
+After converting an OpenCap trial to NWB, inspect the generated file with the example notebook:
+
+```bash
+jupyter lab notebooks/002-subject0.ipynb
+```
+
+The notebook demonstrates how to:
+
+* open the generated NWB file with PyNWB
+* inspect subject and session metadata
+* list the behavior processing module and data interfaces
+* check pose and joint-angle array shapes
+* inspect timestamps
+* plot example pose and joint-angle time series
+
+## Real OpenCap Example Commands
+
+List trials in the included real OpenCap-style subject folder:
+
+```bash
+opencap-to-nwb list-trials --input test_data/subject0
+```
+
+Convert the `Squats_0` trial:
+
+```bash
+opencap-to-nwb \
+  --input test_data/subject0 \
+  --trial Squats_0 \
+  --output test_output/subject0_squats.nwb
+```
+
+Convert the `Asym_0` trial:
+
+```bash
+opencap-to-nwb \
+  --input test_data/subject0 \
+  --trial Asym_0 \
+  --output test_output/subject0_asym.nwb
+```
+
+## Current Limitations
+
+This project is still a prototype. The current implementation is focused on OpenCap/OpenSim-style `.trc` marker trajectories, `.mot` joint-angle / coordinate time series, YAML metadata, and real OpenCap-style folder layouts.
+
+Current limitations include:
+
+* OpenCap Monocular output has not yet been validated.
+* EMG import is not implemented yet.
+* DANDI packaging helpers are not implemented yet.
+* `ndx-pose` support is not implemented yet.
+* Activity labels are inferred conservatively only when obvious from the trial name.
+* Metadata fallback logic fills missing NWB-facing fields from folder and trial context, but it does not replace a formal OpenCap metadata schema.

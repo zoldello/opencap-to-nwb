@@ -13,7 +13,7 @@ from opencap_to_nwb.nwb_validation import (
 
 
 def example_session_dir() -> Path:
-    return Path(__file__).resolve().parents[1] / "example_data" / "session_001"
+    return Path(__file__).resolve().parents[1] / "test_data" / "session_001"
 
 
 def test_generated_nwb_file_passes_validation(tmp_path):
