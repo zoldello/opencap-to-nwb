@@ -1,3 +1,4 @@
+[![Tests](https://github.com/zoldello/opencap-to-nwb/actions/workflows/tests.yml/badge.svg)](https://github.com/zoldello/opencap-to-nwb/actions/workflows/tests.yml)
 # OpenCap to NWB Converter
 
 ## Purpose
@@ -94,7 +95,7 @@ Convert a simple staged folder:
 
 ```bash
 opencap-to-nwb \
-  --input test_dat/session_001 \
+  --input test_data/session_001 \
   --output session_001.nwb
 ```
 
@@ -184,6 +185,14 @@ The notebook demonstrates how to:
 * inspect timestamps
 * plot example pose and joint-angle time series
 
+## Inspect an NWB File
+
+After converting a trial, inspect the generated NWB file from the command line:
+
+```bash
+opencap-to-nwb inspect test_output/subject0_squats.nwb
+```
+
 ## Real OpenCap Example Commands
 
 List trials in the included real OpenCap-style subject folder:
@@ -222,3 +231,7 @@ Current limitations include:
 * `ndx-pose` support is not implemented yet.
 * Activity labels are inferred conservatively only when obvious from the trial name.
 * Metadata fallback logic fills missing NWB-facing fields from folder and trial context, but it does not replace a formal OpenCap metadata schema.
+
+## License
+
+This project is licensed under the MIT License. See `LICENSE` for details.
