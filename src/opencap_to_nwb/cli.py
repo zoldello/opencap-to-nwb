@@ -61,6 +61,12 @@ def build_convert_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--emg",
+        type=Path,
+        help="Optional raw EMG CSV file path.",
+    )
+
+    parser.add_argument(
         "--no-validate-nwb",
         action="store_true",
         help="Skip NWB schema validation after writing.",
@@ -137,6 +143,7 @@ def main(argv: list[str] | None = None) -> int:
             metadata_path=args.metadata,
             trc_path=args.trc,
             mot_path=args.mot,
+            emg_path=args.emg,
             validate_nwb=not args.no_validate_nwb,
         )
     except (ConversionError, ParseError, NwbValidationError) as exc:

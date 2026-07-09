@@ -59,6 +59,21 @@ class JointAngleData:
 
 
 @dataclass(slots=True)
+class EMGData:
+    """Raw EMG time series parsed from a CSV file.
+
+    data shape: (num_timepoints, num_channels)
+    channel_names excludes the time column.
+    """
+
+    time: np.ndarray
+    channel_names: list[str]
+    data: np.ndarray
+    units: str = "mV"
+    source_path: Path | None = None
+
+
+@dataclass(slots=True)
 class OpenCapSession:
     """Parsed OpenCap session ready for NWB writing."""
 
@@ -66,3 +81,4 @@ class OpenCapSession:
     pose: PoseData
     joint_angles: JointAngleData
     input_dir: Path
+    emg: EMGData | None = None

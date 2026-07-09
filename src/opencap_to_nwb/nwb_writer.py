@@ -30,12 +30,43 @@ def _normalize_sex_for_nwb(sex: str | None) -> str:
     return sex
 
 
+def _add_raw_emg(nwbfile: NWBFile, session: OpenCapSession) -> None:
+    """Add optional raw EMG as an NWB acquisition TimeSeries."""
+
+    emg = session.emg
+
+    if emg is None:
+        return
+
+    channel_summary = ", ".join(emg.channel_names)
+
+    emg_ts = TimeSeries(
+        name="RawEMG",
+        data=emg.data,
+        unit=emg.units,
+        timestamps=emg.time,
+        description=(
+            "Raw EMG signals recorded during the movement trial. "
+            "Timestamps are taken directly from the EMG file. "
+            "No automatic synchronization, resampling, or time warping was applied."
+        ),
+        comments=(
+            "Rows are timepoints. Columns are EMG channels. "
+            f"Channels: {channel_summary}. "
+            f"Source file: {emg.source_path}."
+        ),
+    )
+
+    nwbfile.add_acquisition(emg_ts)
+
+
 def write_nwb(session: OpenCapSession, output_path: str | Path) -> Path:
     """Write an OpenCapSession to an NWB file.
 
     V1 stores pose and joint-angle data as generic TimeSeries inside a
     `behavior` processing module. This keeps the first version simple and avoids
-    requiring `ndx-pose` before testing against real OpenCap output.
+    requiring `ndx-pose` before testing against real OpenCap output. Optional
+    raw EMG is stored as an acquisition TimeSeries with its own timestamps.
     """
 
     output_path = Path(output_path)
@@ -114,10 +145,14 @@ def write_nwb(session: OpenCapSession, output_path: str | Path) -> Path:
     )
     behavior_module.add(joint_ts)
 
+    _add_raw_emg(nwbfile, session)
+
+    emg = session.emg
     source_summary = {
         "input_dir": str(session.input_dir),
         "trc": str(pose.source_path) if pose.source_path else None,
         "mot": str(joint.source_path) if joint.source_path else None,
+        "emg": str(emg.source_path) if emg and emg.source_path else None,
         "source_video": metadata.source_video,
     }
     if hasattr(nwbfile, "add_scratch"):

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .discovery import DiscoveryError, resolve_trial_files
 from .metadata_normalization import normalize_session_metadata
+from .emg import parse_emg_csv
 from .models import OpenCapSession
 from .nwb_validation import assert_valid_nwb_file
 from .nwb_writer import write_nwb
@@ -24,6 +25,7 @@ def convert_session(
     metadata_path: str | Path | None = None,
     trc_path: str | Path | None = None,
     mot_path: str | Path | None = None,
+    emg_path: str | Path | None = None,
     validate_nwb: bool = True,
 ) -> Path:
     """Convert an OpenCap/OpenSim-style session to NWB.
@@ -61,6 +63,8 @@ def convert_session(
         Optional explicit TRC path.
     mot_path:
         Optional explicit MOT path.
+    emg_path:
+        Optional explicit raw EMG CSV path.
     validate_nwb:
         If True, validate the generated NWB file after writing.
 
@@ -99,6 +103,7 @@ def convert_session(
 
         pose = parse_trc(trial_files.trc_path)
         joint_angles = parse_mot(trial_files.mot_path)
+        emg = parse_emg_csv(emg_path) if emg_path is not None else None
     except ParseError as exc:
         raise ConversionError(str(exc)) from exc
 
@@ -107,6 +112,7 @@ def convert_session(
         pose=pose,
         joint_angles=joint_angles,
         input_dir=input_dir,
+        emg=emg,
     )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)

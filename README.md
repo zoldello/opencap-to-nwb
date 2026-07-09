@@ -1,4 +1,8 @@
 [![Tests](https://github.com/zoldello/opencap-to-nwb/actions/workflows/tests.yml/badge.svg)](https://github.com/zoldello/opencap-to-nwb/actions/workflows/tests.yml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
+[![Code style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 # OpenCap to NWB Converter
 
 ## Purpose
@@ -17,27 +21,96 @@ This project is currently a prototype. It is intended for evaluation and develop
 
 The current version targets regular OpenCap/OpenSim-style output files. OpenCap Monocular support is planned, but has not yet been validated against real OpenCap Monocular output.
 
+The current version also includes optional raw EMG CSV import. EMG timestamps are preserved as written. The converter does not automatically synchronize, resample, or time-warp EMG data to match `.trc` or `.mot` data.
+
 ## Current Scope
 
 * OpenCap/OpenSim-style `.trc` files for 3D marker/body-point positions
 * OpenCap/OpenSim-style `.mot` files for joint-angle / coordinate time series
+* Optional raw EMG CSV files
 * YAML session metadata
-* Real OpenCap-style folder layouts using `MarkerData/` and `OpenSimData/IK/`
+* Real OpenCap-style folder layouts using `MarkerData/`, `OpenSimData/IK/`, and optional `EMGData/`
 * NWB writing with:
 
   * subject/session metadata
   * pose time series
   * joint-angle time series
+  * optional raw EMG time series
   * source-file references
+
 * Parser, integration, validation, and CLI tests
+
+## Expected Folder Layout
+
+A real OpenCap-style subject folder can look like this:
+
+```text
+test_data/
+  subject0/
+    MarkerData/
+      Squats_0.trc
+      Asym_0.trc
+    OpenSimData/
+      IK/
+        Squats_0.mot
+        Asym_0.mot
+    EMGData/
+      Squats_0_synthetic_raw_emg.csv
+      Asym_0_synthetic_raw_emg.csv
+```
+
+`EMGData/` is optional. Existing `.trc` / `.mot` conversion works without EMG.
+
+## EMG Support
+
+EMG support is currently implemented as an optional raw CSV input.
+
+Expected EMG CSV format:
+
+```csv
+time,TA_R,TA_L,MG_R,MG_L,RF_R,RF_L
+0.000,0.012,-0.003,0.004,0.010,0.005,-0.001
+0.001,0.018,-0.004,0.006,0.013,0.007,-0.002
+```
+
+The first column must be a time column. The parser accepts:
+
+* `time`
+* `time_s`
+
+All other numeric columns are treated as EMG signal channels, except common sync/trigger columns such as:
+
+* `sync_pulse`
+* `sync`
+* `trigger`
+* `ttl`
+
+Raw EMG is stored in NWB as:
+
+```python
+nwbfile.acquisition["RawEMG"]
+```
+
+Important EMG behavior:
+
+* EMG is optional.
+* EMG is stored as raw acquisition data.
+* EMG timestamps are preserved from the CSV file.
+* EMG is not automatically synchronized to `.trc` or `.mot`.
+* EMG is not resampled.
+* EMG is not time-warped.
+* EMG units currently default to millivolts (`mV`).
+
+This design keeps EMG usable for multimodal NWB development while avoiding hard-coded assumptions about synchronization across labs or recording systems.
 
 ## Future Features
 
 The list is sorted roughly by priority. Bold items are expected before a stronger public release.
 
-* **EMG support**
+* **Validation against additional real OpenCap output**
 * **OpenCap Monocular support**
 * **Validation against real OpenCap Monocular output**
+* Validation against real EMG exports from external acquisition systems
 * Optional EMG synchronization metadata
 * DANDI-oriented packaging or upload helpers
 * `ndx-pose` support for richer pose representation
@@ -115,16 +188,29 @@ opencap-to-nwb \
   --output subject0_squats.nwb
 ```
 
+Convert a specific trial with optional EMG:
+
+```bash
+opencap-to-nwb \
+  --input test_data/subject0 \
+  --trial Squats_0 \
+  --emg test_data/subject0/EMGData/Squats_0_synthetic_raw_emg.csv \
+  --output test_output/subject0_squats_with_emg.nwb
+```
+
 Or convert using explicit files:
 
 ```bash
 opencap-to-nwb \
-  --input test_dat/session_001 \
-  --metadata test_dat/session_001/metadata.yaml \
-  --trc test_dat/session_001/trial_001.trc \
-  --mot test_dat/session_001/trial_001.mot \
+  --input test_data/session_001 \
+  --metadata test_data/session_001/metadata.yaml \
+  --trc test_data/session_001/trial_001.trc \
+  --mot test_data/session_001/trial_001.mot \
+  --emg test_data/session_001/EMGData/trial_001_emg.csv \
   --output session_001.nwb
 ```
+
+The `--emg` argument is optional. Existing `.trc` / `.mot` conversion works without EMG.
 
 ## Example Metadata
 
@@ -139,17 +225,6 @@ trial_id: "walk-001"
 activity: "walking"
 source_video: "walk_001.mov"
 ```
-
-## Planned Next Steps
-
-1. Test against additional real regular OpenCap output.
-2. Improve metadata extraction from real OpenCap folders.
-3. Add raw EMG storage as optional V2 input.
-4. Add optional EMG sync offset metadata.
-5. Test against real OpenCap Monocular output.
-6. Add DANDI-oriented packaging or upload helpers.
-7. Consider `ndx-pose` once the basic mapping is stable.
-
 
 ## Example Workflow
 
@@ -166,7 +241,18 @@ opencap-to-nwb \
 jupyter lab notebooks/002-subject0.ipynb
 ```
 
-This checks that the package tests pass, lists the available trials in a real OpenCap-style folder, converts one trial to NWB, and opens the inspection notebook.
+A workflow with optional EMG is:
+
+```bash
+conda activate opencap-to-nwb
+pytest
+opencap-to-nwb \
+  --input test_data/subject0 \
+  --trial Squats_0 \
+  --emg test_data/subject0/EMGData/Squats_0_synthetic_raw_emg.csv \
+  --output test_output/subject0_squats_with_emg.nwb
+opencap-to-nwb inspect test_output/subject0_squats_with_emg.nwb
+```
 
 ## Inspecting NWB Output
 
@@ -193,6 +279,12 @@ After converting a trial, inspect the generated NWB file from the command line:
 opencap-to-nwb inspect test_output/subject0_squats.nwb
 ```
 
+For a file with EMG:
+
+```bash
+opencap-to-nwb inspect test_output/subject0_squats_with_emg.nwb
+```
+
 ## Real OpenCap Example Commands
 
 List trials in the included real OpenCap-style subject folder:
@@ -210,6 +302,16 @@ opencap-to-nwb \
   --output test_output/subject0_squats.nwb
 ```
 
+Convert the `Squats_0` trial with optional EMG:
+
+```bash
+opencap-to-nwb \
+  --input test_data/subject0 \
+  --trial Squats_0 \
+  --emg test_data/subject0/EMGData/Squats_0_synthetic_raw_emg.csv \
+  --output test_output/subject0_squats_with_emg.nwb
+```
+
 Convert the `Asym_0` trial:
 
 ```bash
@@ -219,14 +321,36 @@ opencap-to-nwb \
   --output test_output/subject0_asym.nwb
 ```
 
+Convert the `Asym_0` trial with optional EMG:
+
+```bash
+opencap-to-nwb \
+  --input test_data/subject0 \
+  --trial Asym_0 \
+  --emg test_data/subject0/EMGData/Asym_0_synthetic_raw_emg.csv \
+  --output test_output/subject0_asym_with_emg.nwb
+```
+
+## Planned Next Steps
+
+1. Test against additional real regular OpenCap output.
+2. Improve metadata extraction from real OpenCap folders.
+3. Validate optional raw EMG input against real EMG export files.
+4. Add optional EMG sync offset metadata.
+5. Test against real OpenCap Monocular output.
+6. Add DANDI-oriented packaging or upload helpers.
+7. Consider `ndx-pose` once the basic mapping is stable.
+
 ## Current Limitations
 
-This project is still a prototype. The current implementation is focused on OpenCap/OpenSim-style `.trc` marker trajectories, `.mot` joint-angle / coordinate time series, YAML metadata, and real OpenCap-style folder layouts.
+This project is still a prototype. The current implementation is focused on OpenCap/OpenSim-style `.trc` marker trajectories, `.mot` joint-angle / coordinate time series, optional raw EMG CSV files, YAML metadata, and real OpenCap-style folder layouts.
 
 Current limitations include:
 
 * OpenCap Monocular output has not yet been validated.
-* EMG import is not implemented yet.
+* EMG import currently expects a simple CSV file with a time column and numeric signal channels.
+* EMG timestamps are preserved as written; automatic synchronization is not performed.
+* Real EMG exports from external acquisition systems have not yet been broadly validated.
 * DANDI packaging helpers are not implemented yet.
 * `ndx-pose` support is not implemented yet.
 * Activity labels are inferred conservatively only when obvious from the trial name.

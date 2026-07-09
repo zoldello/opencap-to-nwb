@@ -11,6 +11,7 @@ __all__ = [
     "parse_metadata",
     "parse_mot",
     "parse_trc",
+    "parse_emg_csv",
 ]
 
 
@@ -37,5 +38,10 @@ def __getattr__(name: str):
             "parse_mot": parse_mot,
             "parse_trc": parse_trc,
         }[name]
+
+    if name == "parse_emg_csv":
+        from .emg import parse_emg_csv
+
+        return parse_emg_csv
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
