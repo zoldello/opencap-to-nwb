@@ -28,12 +28,12 @@ def test_real_opencap_subject0_squats_workflow(tmp_path):
 
     output_path = tmp_path / "subject0_squats.nwb"
 
-    convert_session(
-        input_dir=input_dir,
-        output_path=output_path,
-        trial="Squats_0",
-    )
-
+    with pytest.warns(UserWarning):
+        convert_session(
+            input_dir=input_dir,
+            output_path=output_path,
+            trial="Squats_0",
+        )
     assert output_path.exists()
 
     with NWBHDF5IO(str(output_path), "r") as io:
