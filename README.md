@@ -15,6 +15,12 @@ This is useful for researchers working with multimodal human-movement data, incl
 
 The goal is to make OpenCap movement data more useful for neuroscience, neuromuscular research, neurorehabilitation, motor-control, and brain-computer interface workflows. NWB has a rich and growing ecosystem of tools, and this project makes it more convenient for scientists and engineers to use OpenCap data within that ecosystem.
 
+**The repository includes a notebook that demonstrates the full prototype workflow with optional EMG:**
+
+```bash
+jupyter lab notebooks/003-subject0-emg-nwb-demo.ipynb
+```
+
 ## Status
 
 This project is currently a prototype. It is intended for evaluation and development use, not production scientific use.
