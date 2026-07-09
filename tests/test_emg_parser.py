@@ -46,7 +46,7 @@ def test_parse_subject0_synthetic_emg_fixture():
         __import__("pathlib").Path(__file__).resolve().parents[1]
         / "test_data"
         / "subject0"
-        / "EMG"
+        / "EMGData"
         / "Squats_0_synthetic_raw_emg.csv"
     )
 

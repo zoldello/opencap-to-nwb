@@ -80,7 +80,7 @@ def test_real_opencap_subject0_squats_workflow_with_emg(tmp_path):
     from opencap_to_nwb.convert import convert_session
 
     input_dir = real_subject_dir()
-    emg_path = input_dir / "EMG" / "Squats_0_synthetic_raw_emg.csv"
+    emg_path = input_dir / "EMGData" / "Squats_0_synthetic_raw_emg.csv"
     output_path = tmp_path / "subject0_squats_with_emg.nwb"
 
     with pytest.warns(UserWarning):
