@@ -10,7 +10,6 @@ import numpy as np
 from .models import EMGData
 from .parsers import ParseError
 
-
 _SYNC_COLUMN_NAMES = {"sync", "sync_pulse", "trigger", "ttl"}
 _TIME_COLUMN_NAMES = {"time", "time_s", "timestamp", "timestamp_s"}
 
@@ -44,7 +43,9 @@ def parse_emg_csv(path: str | Path, units: str = "mV") -> EMGData:
     header = [col.strip() for col in rows[0]]
 
     if len(header) < 2:
-        raise ParseError(f"EMG file must contain time plus at least one channel: {path}")
+        raise ParseError(
+            f"EMG file must contain time plus at least one channel: {path}"
+        )
 
     time_column = header[0].lower()
     if time_column not in _TIME_COLUMN_NAMES:
